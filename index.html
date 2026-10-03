@@ -78,6 +78,9 @@ footer{text-align:center;margin-top:30px;font-weight:700;opacity:.8;font-size:14
   <h2 class="fr">Painel da organizadora</h2>
   <div class="stats" style="margin-bottom:10px"><span id="aResumo"></span></div>
   <p><small>Confira o pagamento no extrato e toque em “Pago”. Reserva sem pagamento volta a ficar livre sozinha depois de 30 minutos. A tabela atualiza sozinha.</small></p>
+  <label for="busca" style="font-weight:800;display:block;margin-top:12px">Buscar número ou nome (ex.: número sorteado)</label>
+  <input class="nome" id="busca" inputmode="search" placeholder="Ex.: 37 ou Maria" style="font-size:18px;margin:6px 0">
+  <div id="ganhador"></div>
   <div style="margin-top:10px"><table id="tab"><thead><tr><th>Nome</th><th>Números</th><th>Situação</th><th></th></tr></thead><tbody id="tabCorpo"></tbody></table></div>
   <p style="margin-top:12px"><small>Marcar à mão (ex.: 3, 4, 10):</small></p>
   <div class="row"><input id="manual" placeholder="números separados por vírgula" style="flex:1;min-width:160px;border:2px solid var(--marinho);border-radius:14px;padding:10px;font:600 16px Nunito"><button class="sec" id="mVendido">Vendido</button><button class="sec" id="mLivre">Livre</button></div>
@@ -126,7 +129,9 @@ footer{text-align:center;margin-top:30px;font-weight:700;opacity:.8;font-size:14
     <p id="resumoNome"></p>
     <label for="nome" style="font-weight:800;display:block;margin-top:14px">Seu nome</label>
     <input class="nome" id="nome" maxlength="60" placeholder="Nome e sobrenome" autocomplete="name">
-    <p><small>O nome serve para a organizadora conferir seu pagamento e anunciar o sorteio. Só ela vê.</small></p>
+    <label for="tel" style="font-weight:800;display:block;margin-top:6px">Seu WhatsApp</label>
+    <input class="nome" id="tel" maxlength="20" placeholder="(15) 99999-9999" inputmode="tel" autocomplete="tel">
+    <p><small>Nome e telefone servem para conferir seu pagamento e avisar se você ganhar. Só a organizadora vê.</small></p>
     <div class="row"><button class="go" id="gerar">Gerar PIX</button></div>
   </div>
   <div id="passoPix" style="display:none">
@@ -226,19 +231,21 @@ function clique(n) {
 $('pagar').onclick = () => {
   const nums = [...sel].sort((a, b) => a - b);
   $('resumoNome').innerHTML = `Números <b>${nums.map(pad).join(', ')}</b> · <b>${brl(nums.length * CFG.preco)}</b>`;
-  try { $('nome').value = localStorage.getItem('nome') || ''; } catch (e) {}
+  try { $('nome').value = localStorage.getItem('nome') || ''; $('tel').value = localStorage.getItem('tel') || ''; } catch (e) {}
   $('passoPix').style.display = 'none'; $('passoNome').style.display = 'block';
   $('modal').classList.add('on'); $('nome').focus();
 };
 $('gerar').onclick = async () => {
   const nome = $('nome').value.trim().replace(/\s+/g, ' ');
   if (nome.length < 2) { $('nome').focus(); return alert('Digite seu nome para continuar.'); }
-  try { localStorage.setItem('nome', nome); } catch (e) {}
+  const tel = $('tel').value.replace(/\D/g, '');
+  if (tel.length < 10 || tel.length > 13) { $('tel').focus(); return alert('Digite seu WhatsApp com DDD.'); }
+  try { localStorage.setItem('nome', nome); localStorage.setItem('tel', $('tel').value); } catch (e) {}
   const nums = [...sel].sort((a, b) => a - b), valor = nums.length * CFG.preco;
   const txid = 'BRISA' + Math.random().toString(36).slice(2, 8).toUpperCase();
   $('gerar').disabled = true; $('gerar').textContent = 'Reservando...';
   let r;
-  try { r = await rpc('reservar', { nums, cod: txid, nome }); } catch (e) { r = { ok: false, erro: 'rede' }; }
+  try { r = await rpc('reservar', { nums, cod: txid, nome, telefone: tel }); } catch (e) { r = { ok: false, erro: 'rede' }; }
   $('gerar').disabled = false; $('gerar').textContent = 'Gerar PIX';
   if (!r.ok) {
     $('modal').classList.remove('on'); await carregar();
@@ -271,14 +278,19 @@ function painel() {
   let pagos = 0, aguard = 0;
   const corpo = $('tabCorpo'); corpo.innerHTML = '';
   if (!grupos.length) corpo.innerHTML = '<tr><td colspan="4"><small>Nenhuma compra ainda.</small></td></tr>';
-  grupos.forEach(ls => {
+  grupos.forEach(ls => ls[0].status === 'vendido' ? pagos += ls.length * CFG.preco : aguard += ls.length * CFG.preco);
+  const q = $('busca').value.trim().toLowerCase(), qn = /^\d+$/.test(q) ? Number(q) : null;
+  const visiveis = !q ? grupos : grupos.filter(ls => qn !== null ? ls.some(l => l.n === qn) : (ls[0].nome || '').toLowerCase().includes(q));
+  ganhador(qn, grupos);
+  if (q && !visiveis.length) corpo.innerHTML = '<tr><td colspan="4"><small>Nada encontrado.</small></td></tr>';
+  visiveis.forEach(ls => {
     const nums = ls.map(l => l.n).sort((a, b) => a - b), pago = ls[0].status === 'vendido', valor = nums.length * CFG.preco;
-    pago ? pagos += valor : aguard += valor;
     const min = Math.max(0, Math.round((new Date(ls[0].reservado_ate) - Date.now()) / 60000));
     const hora = new Date(ls[0].atualizado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
     const tr = document.createElement('tr');
     const cel = (h) => { const td = document.createElement('td'); td.innerHTML = h; tr.append(td); return td; };
-    cel(esc(ls[0].nome || '(à mão)')); cel(`${nums.map(pad).join(', ')}<br><small>${brl(valor)}</small>`);
+    const tel = ls[0].telefone || '';
+    cel(esc(ls[0].nome || '(à mão)') + (tel ? `<br><small><a href="https://wa.me/55${tel.replace(/^55(?=\d{10,11}$)/, '')}" target="_blank" rel="noopener">${fone(tel)}</a></small>` : '')); cel(`${nums.map(pad).join(', ')}<br><small>${brl(valor)}</small>`);
     cel((pago ? '<span class="tag p">Pago</span>' : `<span class="tag a">Aguardando</span><br><small>expira em ${min} min</small>`) + `<br><small>${hora}</small>`);
     const acao = cel('');
     if (!pago) { const ok = document.createElement('button'); ok.className = 'go'; ok.textContent = 'Pago'; ok.onclick = () => definir(nums, 'vendido'); acao.append(ok, ' '); }
@@ -288,6 +300,21 @@ function painel() {
   });
   $('aResumo').textContent = `Pago: ${brl(pagos)} · Aguardando: ${brl(aguard)}`;
 }
+const fone = t => { const d = t.replace(/^55(?=\d{10,11}$)/, ''); return d.length === 11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : t; };
+function ganhador(qn, grupos) {
+  const el = $('ganhador'); el.innerHTML = '';
+  if (qn === null) return;
+  const g = grupos.find(ls => ls.some(l => l.n === qn));
+  const caixa = (cor, html) => `<div style="background:${cor};border-radius:20px;padding:16px;margin:6px 0 4px;font-weight:700;line-height:1.5">${html}</div>`;
+  if (!g) return el.innerHTML = caixa('#F4F1EC', `Número <b>${pad(qn)}</b> não foi vendido.`);
+  const l = g[0], tel = l.telefone || '', pago = l.status === 'vendido';
+  el.innerHTML = caixa(pago ? '#BFE6CF' : '#F9D56E',
+    `<span class="fr" style="font-size:26px">Número ${pad(qn)}</span><br>` +
+    `<span style="font-size:22px">${esc(l.nome || '(marcado à mão)')}</span><br>` +
+    (tel ? `WhatsApp: <a href="https://wa.me/55${tel.replace(/^55(?=\d{10,11}$)/, '')}" target="_blank" rel="noopener"><b>${fone(tel)}</b></a><br>` : 'Sem telefone cadastrado<br>') +
+    (pago ? 'Pagamento confirmado ✓' : '<b>Atenção: pagamento ainda não confirmado.</b>'));
+}
+$('busca').oninput = () => painel();
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 async function definir(nums, novo) { try { await rpc('admin_definir', { pin, nums, novo }); } catch (e) { alert('Não deu: ' + e.message); } carregar(); }
 const manual = () => $('manual').value.split(/[^0-9]+/).filter(Boolean).map(Number).filter(n => n >= 1 && n <= CFG.numeros);
