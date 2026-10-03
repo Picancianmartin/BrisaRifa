@@ -82,8 +82,11 @@ footer{text-align:center;margin-top:30px;font-weight:700;opacity:.8;font-size:14
   <input class="nome" id="busca" inputmode="search" placeholder="Ex.: 37 ou Maria" style="font-size:18px;margin:6px 0">
   <div id="ganhador"></div>
   <div style="margin-top:10px"><table id="tab"><thead><tr><th>Nome</th><th>Números</th><th>Situação</th><th></th></tr></thead><tbody id="tabCorpo"></tbody></table></div>
-  <p style="margin-top:12px"><small>Marcar à mão (ex.: 3, 4, 10):</small></p>
-  <div class="row"><input id="manual" placeholder="números separados por vírgula" style="flex:1;min-width:160px;border:2px solid var(--marinho);border-radius:14px;padding:10px;font:600 16px Nunito"><button class="sec" id="mVendido">Vendido</button><button class="sec" id="mLivre">Livre</button></div>
+  <h3 class="fr" style="margin-top:18px;font-size:20px">Venda feita fora do site</h3>
+  <input class="nome" id="manual" placeholder="Números, ex.: 3, 4, 10" inputmode="numeric" style="font-size:17px;margin:6px 0">
+  <input class="nome" id="mNome" placeholder="Nome de quem comprou" maxlength="60" style="font-size:17px;margin:6px 0">
+  <input class="nome" id="mTel" placeholder="WhatsApp (opcional)" inputmode="tel" maxlength="20" style="font-size:17px;margin:6px 0">
+  <div class="row"><button class="go" id="mVendido">Marcar como vendido</button><button class="sec" id="mLivre">Liberar números</button></div>
 </section>
 <section><div class="card hist">
   <img src="foto2.jpg" alt="A Brisa em uma calçada">
@@ -318,7 +321,14 @@ $('busca').oninput = () => painel();
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 async function definir(nums, novo) { try { await rpc('admin_definir', { pin, nums, novo }); } catch (e) { alert('Não deu: ' + e.message); } carregar(); }
 const manual = () => $('manual').value.split(/[^0-9]+/).filter(Boolean).map(Number).filter(n => n >= 1 && n <= CFG.numeros);
-$('mVendido').onclick = () => definir(manual(), 'vendido');
+$('mVendido').onclick = async () => {
+  const nums = manual(), nome = $('mNome').value.trim();
+  if (!nums.length) return alert('Digite os números.');
+  if (nome.length < 2) return alert('Digite o nome de quem comprou.');
+  try { await rpc('admin_marcar', { pin, nums, nome, telefone: $('mTel').value }); ['manual', 'mNome', 'mTel'].forEach(i => $(i).value = ''); }
+  catch (e) { alert('Não deu: ' + e.message); }
+  carregar();
+};
 $('mLivre').onclick = () => definir(manual(), 'livre');
 
 desenhar();          // mostra a grade na hora, antes de falar com o banco
