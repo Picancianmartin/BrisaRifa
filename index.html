@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rifa da Brisa</title>
+<meta name="description" content="Rifa solidária para pagar as despesas da Brisa no veterinário, depois de ser atropelada em Boituva. Escolha seus números e pague por PIX.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+:root{--creme:#FFF6EA;--pessego:#FFDDBF;--coral:#F4795B;--marinho:#2A2F6B;--ceu:#D6E6F7;--rosa:#FBD3CF;--verde:#5FB486}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Nunito,Arial,sans-serif;background:var(--creme);color:var(--marinho);padding-bottom:120px}
+.fr{font-family:Fredoka,Nunito,sans-serif;font-weight:700;line-height:1.05}
+.wrap{max-width:560px;margin:0 auto;padding:0 18px}
+.pill{display:inline-block;background:var(--coral);color:#fff;font-weight:800;font-size:15px;padding:8px 16px;border-radius:999px}
+.card{background:#fff;border-radius:26px;box-shadow:0 8px 0 rgba(42,47,107,.08);padding:20px}
+header{background:var(--pessego);padding:28px 0 34px;border-radius:0 0 44px 44px}
+.hero{display:flex;gap:16px;align-items:flex-end;margin-top:16px}
+.hero img{width:46%;aspect-ratio:1/1.1;object-fit:cover;object-position:28% 40%;border:6px solid #fff;border-radius:200px 200px 24px 24px;transform:rotate(-2deg);box-shadow:0 8px 0 rgba(42,47,107,.1)}
+h1{font-size:38px}
+.sub{font-weight:700;font-size:17px;line-height:1.4;margin-top:10px}
+section{margin-top:26px}
+h2{font-size:26px;margin-bottom:12px}
+p{line-height:1.5;font-weight:600}
+.hist{display:flex;gap:14px;align-items:center}
+.hist img{width:92px;height:92px;border-radius:50%;object-fit:cover;object-position:60% 40%;border:5px solid #fff;flex-shrink:0;box-shadow:0 5px 0 rgba(42,47,107,.1)}
+.barra{height:22px;background:var(--ceu);border-radius:999px;overflow:hidden;margin:12px 0 8px}
+.barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--coral),#F98513);border-radius:999px;transition:width .6s}
+.stats{display:flex;justify-content:space-between;font-weight:800;font-size:15px}
+.premio{display:flex;justify-content:space-between;align-items:center;background:var(--coral);color:#fff;border-radius:26px;padding:16px 20px;margin-top:14px}
+.premio b{font-size:30px}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;font-weight:800;font-size:13px;margin-bottom:12px}
+.legenda span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:6px;vertical-align:-2px;background:#fff;border:2px solid var(--marinho)}
+.legenda .s::before{background:var(--coral);border-color:var(--coral)}
+.legenda .r::before{background:#F9D56E;border-color:#F9D56E}
+.legenda .v::before{background:#C8C8D8;border-color:#C8C8D8}
+.grade{display:grid;grid-template-columns:repeat(8,1fr);gap:7px}
+.n{aspect-ratio:1;border-radius:50%;border:0;background:#fff;color:var(--marinho);font:600 16px Fredoka,sans-serif;box-shadow:0 3px 0 rgba(42,47,107,.12);cursor:pointer}
+.n.sel{background:var(--coral);color:#fff;transform:scale(1.08)}
+.n.res{background:#F9D56E;cursor:not-allowed}
+.n.ven{background:#C8C8D8;color:#8888A8;text-decoration:line-through;cursor:not-allowed;box-shadow:none}
+.passos{counter-reset:p;display:flex;flex-direction:column;gap:12px}
+.passos li{list-style:none;display:flex;gap:12px;align-items:center;font-weight:700}
+.passos li::before{counter-increment:p;content:counter(p);flex-shrink:0;width:36px;height:36px;border-radius:50%;background:var(--coral);color:#fff;font:700 20px Fredoka;display:flex;align-items:center;justify-content:center}
+.barra-fixa{position:fixed;left:0;right:0;bottom:0;background:#fff;box-shadow:0 -6px 20px rgba(42,47,107,.15);padding:12px 18px calc(12px + env(safe-area-inset-bottom));z-index:5}
+.barra-fixa .in{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.barra-fixa .t{flex:1;font-weight:800;font-size:15px;line-height:1.25}
+.barra-fixa .t b{font:700 24px Fredoka}
+button.go{background:var(--coral);color:#fff;border:0;border-radius:999px;font:700 18px Fredoka;padding:14px 24px;cursor:pointer}
+button.go:disabled{background:#CFCFE0}
+.modal{position:fixed;inset:0;background:rgba(42,47,107,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.modal.on{display:flex}
+.modal .box{background:var(--creme);width:100%;max-width:560px;max-height:94vh;overflow:auto;border-radius:32px 32px 0 0;padding:24px 20px 30px}
+#qr{background:#fff;padding:14px;border-radius:20px;display:flex;justify-content:center;margin:14px 0}
+#qr svg,#qr img{width:min(260px,70vw);height:auto}
+.copia{width:100%;font:600 12px monospace;border:2px dashed var(--coral);border-radius:14px;padding:10px;background:#fff;color:var(--marinho);word-break:break-all;height:84px;resize:none}
+button.sec{background:#fff;border:2px solid var(--marinho);color:var(--marinho);border-radius:999px;font:700 16px Fredoka;padding:11px 18px;cursor:pointer}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.fecha{float:right;background:none;border:0;font-size:30px;color:var(--marinho);cursor:pointer}
+.adm{display:none;background:#fff;border:3px dashed var(--coral);border-radius:20px;padding:16px}
+table{border-collapse:collapse;width:100%;font-size:15px;font-weight:700}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid #eee;vertical-align:top}th{font-size:12px;text-transform:uppercase;opacity:.65}.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:800}.tag.a{background:#F9D56E}.tag.p{background:#BFE6CF}td .go,td .sec{font-size:14px;padding:6px 10px}@media(max-width:520px){table{font-size:14px}th,td{padding:8px 4px}}td:last-child{text-align:right;white-space:nowrap}td:last-child button{display:block;margin:0 0 6px auto}input.nome{width:100%;border:3px solid var(--marinho);border-radius:16px;padding:14px;font:700 20px Nunito;margin:10px 0}
+.adm.on{display:block}
+small{font-weight:700;opacity:.75}
+footer{text-align:center;margin-top:30px;font-weight:700;opacity:.8;font-size:14px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <span class="pill">Rifa solidária · Boituva</span>
+  <div class="hero">
+    <img src="foto1.jpg" alt="A Brisa, cachorra preta com peito branco, olhando para a câmera">
+    <div><h1 class="fr">A Brisa precisa de você</h1><p class="sub">Um número é R$ <span class="preco"></span>. Um deles ganha R$ <span class="premio-v"></span> no PIX.</p></div>
+  </div>
+</div></header>
+
+<main class="wrap">
+<section class="adm" id="adm">
+  <h2 class="fr">Painel da organizadora</h2>
+  <div class="stats" style="margin-bottom:10px"><span id="aResumo"></span></div>
+  <p><small>Confira o pagamento no extrato e toque em “Pago”. Reserva sem pagamento volta a ficar livre sozinha depois de 30 minutos. A tabela atualiza sozinha.</small></p>
+  <div style="margin-top:10px"><table id="tab"><thead><tr><th>Nome</th><th>Números</th><th>Situação</th><th></th></tr></thead><tbody id="tabCorpo"></tbody></table></div>
+  <p style="margin-top:12px"><small>Marcar à mão (ex.: 3, 4, 10):</small></p>
+  <div class="row"><input id="manual" placeholder="números separados por vírgula" style="flex:1;min-width:160px;border:2px solid var(--marinho);border-radius:14px;padding:10px;font:600 16px Nunito"><button class="sec" id="mVendido">Vendido</button><button class="sec" id="mLivre">Livre</button></div>
+</section>
+<section><div class="card hist">
+  <img src="foto2.jpg" alt="A Brisa em uma calçada">
+  <p>Na noite de 2 de outubro, em Boituva, a Brisa foi atingida por um carro em alta velocidade. O motorista parou, mas não prestou ajuda e não quis se responsabilizar. A Brisa teve despesas no veterinário, e esta rifa foi feita para pagar essas despesas.</p>
+</div></section>
+
+<section><div class="card">
+  <h2 class="fr">Quanto já foi</h2>
+  <div class="barra"><i id="prog"></i></div>
+  <div class="stats"><span id="st-n"></span><span id="st-r"></span></div>
+  <div class="premio"><span>Prêmio em PIX para 1 número</span><b class="fr">R$ <span class="premio-v"></span></b></div>
+  <p style="margin-top:12px"><small>Se todos os números forem vendidos, são R$ <span id="bruto"></span> arrecadados. Depois do prêmio, R$ <span id="meta"></span> vão para pagar as despesas da Brisa no veterinário.</small></p>
+</div></section>
+
+<section>
+  <h2 class="fr">Escolha seus números</h2>
+  <div class="legenda"><span>Livre</span><span class="s">Seu</span><span class="r">Aguardando confirmação</span><span class="v">Vendido</span></div>
+  <p id="aviso" style="display:none;background:#FFF0C2;border-radius:14px;padding:10px 14px;font-weight:700;margin-bottom:10px">Não consegui atualizar os números agora. Confira sua internet; vou tentar de novo sozinha.</p>
+  <div class="grade" id="grade"></div>
+  </section>
+
+<section><div class="card">
+  <h2 class="fr">Como participar</h2>
+  <ol class="passos">
+    <li>Toque nos números que quiser e em “Pagar com PIX”.</li>
+    <li>Pague o QR code ou o PIX copia e cola. A conta é da Giovana Dal Pozzo.</li>
+    <li>Mande o comprovante e os números no WhatsApp (15) 99778-3643. Depois da confirmação, o número fica riscado aqui.</li>
+    <li>O sorteio é ao vivo nos stories quando o último número for vendido.</li>
+  </ol>
+</div></section>
+<footer>O recibo do veterinário e a prestação de contas serão divulgados aqui e nos stories.</footer>
+</main>
+
+<div class="barra-fixa"><div class="in">
+  <div class="t"><span id="qtd">0 números</span><br><b id="total">R$ 0</b></div>
+  <button class="go" id="pagar" disabled>Pagar com PIX</button>
+</div></div>
+
+<div class="modal" id="modal"><div class="box">
+  <button class="fecha" id="fecha" aria-label="Fechar">×</button>
+  <div id="passoNome">
+    <h2 class="fr">Quase lá!</h2>
+    <p id="resumoNome"></p>
+    <label for="nome" style="font-weight:800;display:block;margin-top:14px">Seu nome</label>
+    <input class="nome" id="nome" maxlength="60" placeholder="Nome e sobrenome" autocomplete="name">
+    <p><small>O nome serve para a organizadora conferir seu pagamento e anunciar o sorteio. Só ela vê.</small></p>
+    <div class="row"><button class="go" id="gerar">Gerar PIX</button></div>
+  </div>
+  <div id="passoPix" style="display:none">
+  <h2 class="fr">Pague por PIX</h2>
+  <p id="resumo"></p>
+  <div id="qr"></div>
+  <p><small>Recebedora: Giovana Dal Pozzo. Confira o nome no seu banco antes de confirmar.</small></p>
+  <textarea class="copia" id="copia" readonly></textarea>
+  <div class="row"><button class="go" id="copiaPix">Copiar PIX</button></div>
+  <h2 class="fr" style="margin-top:22px;font-size:22px">Depois de pagar</h2>
+  <p>Mande o comprovante e esta mensagem no WhatsApp (15) 99778-3643. Seus números ficam guardados quando o pagamento for confirmado.</p>
+  <textarea class="copia" id="msg" readonly style="height:64px;border-style:solid"></textarea>
+  <div class="row"><button class="sec" id="copiaMsg">Copiar mensagem</button><a id="zap" href="#" target="_blank" rel="noopener"><button class="go">Enviar no WhatsApp</button></a></div>
+  </div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+const CFG = { numeros: 120, preco: 10, premio: 200,
+  chave: '+5515997783643', whats: '5515997783643',
+  sbUrl: 'https://iumpfayljegytozokeyc.supabase.co', sbKey: 'sb_publishable_UJo9RldholZpn2kYmBGAsg_CfBh9nCr', nome: 'GIOVANA DAL POZZO', cidade: 'BOITUVA' };
+const meta = CFG.numeros * CFG.preco - CFG.premio;
+const brl = n => 'R$ ' + n.toLocaleString('pt-BR');
+const pad = n => String(n).padStart(2, '0');
+const $ = id => document.getElementById(id);
+let estado = { vendidos: [], reservados: [] }, sel = new Set(), adm = location.hash === '#admin';
+
+document.querySelectorAll('.preco').forEach(e => e.textContent = CFG.preco);
+document.querySelectorAll('.premio-v').forEach(e => e.textContent = CFG.premio);
+$('meta').textContent = meta.toLocaleString('pt-BR');
+$('bruto').textContent = (CFG.numeros * CFG.preco).toLocaleString('pt-BR');
+if (adm) $('adm').classList.add('on');
+
+// ---- PIX copia e cola (BR Code estatico com valor) ----
+const tlv = (id, v) => id + String(v.length).padStart(2, '0') + v;
+function crc16(s) {
+  let c = 0xFFFF;
+  for (let i = 0; i < s.length; i++) { c ^= s.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF; }
+  return c.toString(16).toUpperCase().padStart(4, '0');
+}
+function brcode(valor, txid) {
+  const p = tlv('00', '01') + tlv('01', '11') +
+    tlv('26', tlv('00', 'br.gov.bcb.pix') + tlv('01', CFG.chave)) +
+    tlv('52', '0000') + tlv('53', '986') + tlv('54', valor.toFixed(2)) + tlv('58', 'BR') +
+    tlv('59', CFG.nome) + tlv('60', CFG.cidade) + tlv('62', tlv('05', txid)) + '6304';
+  return p + crc16(p);
+}
+
+// ---- banco (Supabase): so numero e estado ficam publicos ----
+async function rpc(nome, corpo) {
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
+  const r = await fetch(CFG.sbUrl + '/rest/v1/rpc/' + nome, { method: 'POST', signal: ctl.signal,
+    headers: { apikey: CFG.sbKey, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo || {}) });
+  clearTimeout(to);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || r.status);
+  return r.json();
+}
+let linhasAdm = {};    // so no modo admin: n -> linha completa
+async function carregar() {
+  try {
+    const linhas = adm && pin ? await rpc('admin_listar', { pin }) : await rpc('listar');
+    $('aviso').style.display = 'none';
+    estado = { vendidos: linhas.filter(l => l.status === 'vendido').map(l => l.n),
+               reservados: linhas.filter(l => l.status === 'reservado').map(l => l.n) };
+    linhasAdm = {}; if (adm && pin) linhas.forEach(l => linhasAdm[l.n] = l);
+  } catch (e) { $('aviso').style.display = 'block'; if (adm && /senha/.test(e.message)) { pin = ''; sessionStorage.removeItem('pin'); } }
+  for (const n of [...sel]) if (estado.vendidos.includes(n) || estado.reservados.includes(n)) sel.delete(n);
+  desenhar(); if (adm) painel();
+}
+function status(n) { return estado.vendidos.includes(n) ? 'ven' : estado.reservados.includes(n) ? 'res' : sel.has(n) ? 'sel' : ''; }
+
+function desenhar() {
+  const g = $('grade'); g.innerHTML = '';
+  for (let n = 1; n <= CFG.numeros; n++) {
+    const b = document.createElement('button');
+    b.className = 'n ' + status(n); b.textContent = pad(n);
+    b.setAttribute('aria-label', 'Número ' + n);
+    b.onclick = () => clique(n);
+    g.appendChild(b);
+  }
+  const v = estado.vendidos.length;
+  $('prog').style.width = (v / CFG.numeros * 100) + '%';
+  $('st-n').textContent = `${v} de ${CFG.numeros} números vendidos`;
+  $('st-r').textContent = brl(v * CFG.preco) + ' arrecadados';
+  const q = sel.size;
+  $('qtd').textContent = q === 1 ? '1 número' : q + ' números';
+  $('total').textContent = brl(q * CFG.preco);
+  $('pagar').disabled = q === 0;
+}
+function clique(n) {
+  if (estado.vendidos.includes(n) || estado.reservados.includes(n)) return;
+  sel.has(n) ? sel.delete(n) : sel.add(n);
+  desenhar();
+}
+
+// ---- pagamento: nome, reserva, QR ----
+$('pagar').onclick = () => {
+  const nums = [...sel].sort((a, b) => a - b);
+  $('resumoNome').innerHTML = `Números <b>${nums.map(pad).join(', ')}</b> · <b>${brl(nums.length * CFG.preco)}</b>`;
+  try { $('nome').value = localStorage.getItem('nome') || ''; } catch (e) {}
+  $('passoPix').style.display = 'none'; $('passoNome').style.display = 'block';
+  $('modal').classList.add('on'); $('nome').focus();
+};
+$('gerar').onclick = async () => {
+  const nome = $('nome').value.trim().replace(/\s+/g, ' ');
+  if (nome.length < 2) { $('nome').focus(); return alert('Digite seu nome para continuar.'); }
+  try { localStorage.setItem('nome', nome); } catch (e) {}
+  const nums = [...sel].sort((a, b) => a - b), valor = nums.length * CFG.preco;
+  const txid = 'BRISA' + Math.random().toString(36).slice(2, 8).toUpperCase();
+  $('gerar').disabled = true; $('gerar').textContent = 'Reservando...';
+  let r;
+  try { r = await rpc('reservar', { nums, cod: txid, nome }); } catch (e) { r = { ok: false, erro: 'rede' }; }
+  $('gerar').disabled = false; $('gerar').textContent = 'Gerar PIX';
+  if (!r.ok) {
+    $('modal').classList.remove('on'); await carregar();
+    return alert(r.erro === 'ocupado' ? 'Esses números acabaram de ser escolhidos por outra pessoa: ' + r.indisponiveis.map(pad).join(', ') + '. Escolha outros.'
+                                      : 'Não consegui reservar agora. Tente de novo em instantes.');
+  }
+  const codigo = brcode(valor, txid);
+  const qr = qrcode(0, 'M'); qr.addData(codigo); qr.make();
+  $('qr').innerHTML = qr.createSvgTag({ scalable: true, margin: 0 });
+  $('copia').value = codigo;
+  const lista = nums.map(pad).join(', ');
+  $('resumo').innerHTML = `Números <b>${lista}</b> · <b>${brl(valor)}</b><br><small>Reservados para você por 30 minutos. Pague nesse tempo.</small>`;
+  $('msg').value = `Rifa da Brisa: sou ${nome} e comprei os números ${lista} (${brl(valor)}). Segue o comprovante.`;
+  $('zap').href = 'https://wa.me/' + CFG.whats + '?text=' + encodeURIComponent($('msg').value);
+  $('passoNome').style.display = 'none'; $('passoPix').style.display = 'block';
+  sel.clear(); await carregar();
+};
+$('fecha').onclick = () => $('modal').classList.remove('on');
+const copiar = (id, btn) => async () => { try { await navigator.clipboard.writeText($(id).value); } catch (e) { $(id).select(); document.execCommand('copy'); } const o = btn.textContent; btn.textContent = 'Copiado!'; setTimeout(() => btn.textContent = o, 1500); };
+$('copiaPix').onclick = function () { copiar('copia', this)(); };
+$('copiaMsg').onclick = function () { copiar('msg', this)(); };
+
+// ---- administradora ----
+let pin = sessionStorage.getItem('pin') || '';
+if (adm && !pin) { pin = prompt('Senha da administradora:') || ''; sessionStorage.setItem('pin', pin); }
+function painel() {
+  const por = {};
+  Object.values(linhasAdm).filter(l => l.status !== 'livre').forEach(l => (por[l.codigo || 'manual-' + l.n] ||= []).push(l));
+  const grupos = Object.values(por).sort((a, b) => new Date(b[0].atualizado_em) - new Date(a[0].atualizado_em));
+  let pagos = 0, aguard = 0;
+  const corpo = $('tabCorpo'); corpo.innerHTML = '';
+  if (!grupos.length) corpo.innerHTML = '<tr><td colspan="4"><small>Nenhuma compra ainda.</small></td></tr>';
+  grupos.forEach(ls => {
+    const nums = ls.map(l => l.n).sort((a, b) => a - b), pago = ls[0].status === 'vendido', valor = nums.length * CFG.preco;
+    pago ? pagos += valor : aguard += valor;
+    const min = Math.max(0, Math.round((new Date(ls[0].reservado_ate) - Date.now()) / 60000));
+    const hora = new Date(ls[0].atualizado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const tr = document.createElement('tr');
+    const cel = (h) => { const td = document.createElement('td'); td.innerHTML = h; tr.append(td); return td; };
+    cel(esc(ls[0].nome || '(à mão)')); cel(`${nums.map(pad).join(', ')}<br><small>${brl(valor)}</small>`);
+    cel((pago ? '<span class="tag p">Pago</span>' : `<span class="tag a">Aguardando</span><br><small>expira em ${min} min</small>`) + `<br><small>${hora}</small>`);
+    const acao = cel('');
+    if (!pago) { const ok = document.createElement('button'); ok.className = 'go'; ok.textContent = 'Pago'; ok.onclick = () => definir(nums, 'vendido'); acao.append(ok, ' '); }
+    const li = document.createElement('button'); li.className = 'sec'; li.textContent = pago ? 'Desfazer' : 'Liberar'; li.onclick = () => { if (!pago || confirm('Desfazer a venda destes números?')) definir(nums, 'livre'); };
+    acao.append(li);
+    corpo.append(tr);
+  });
+  $('aResumo').textContent = `Pago: ${brl(pagos)} · Aguardando: ${brl(aguard)}`;
+}
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+async function definir(nums, novo) { try { await rpc('admin_definir', { pin, nums, novo }); } catch (e) { alert('Não deu: ' + e.message); } carregar(); }
+const manual = () => $('manual').value.split(/[^0-9]+/).filter(Boolean).map(Number).filter(n => n >= 1 && n <= CFG.numeros);
+$('mVendido').onclick = () => definir(manual(), 'vendido');
+$('mLivre').onclick = () => definir(manual(), 'livre');
+
+desenhar();          // mostra a grade na hora, antes de falar com o banco
+carregar();
+setInterval(carregar, 10000);       // todo mundo ve as mudancas em ate 10 segundos
+</script>
+</body>
+</html>
